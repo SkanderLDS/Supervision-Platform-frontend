@@ -84,10 +84,13 @@
 
     <!-- Versions Panel -->
     <div class="panel" *ngIf="selectedAppId">
-      <div class="panel-header">
-        <h2>Versions — {{ getSelectedApp()?.name }}</h2>
-        <button class="btn-small" (click)="showVersionForm = !showVersionForm">+ New Version</button>
-      </div>
+      <div class="versions-header">
+  <div class="versions-title">
+    <h2>Versions</h2>
+    <span class="versions-app-name">{{ getSelectedApp()?.name }}</span>
+  </div>
+  <button class="btn-small" (click)="showVersionForm = !showVersionForm">+ New Version</button>
+</div>
 
       <!-- New Version Form -->
       <div class="inline-form" *ngIf="showVersionForm">
