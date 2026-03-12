@@ -66,3 +66,21 @@
 .nav-item.active .nav-icon {
   opacity: 1;
 }
+
+.alert-badge {
+  margin-left: auto;
+  background: #d4001a;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}

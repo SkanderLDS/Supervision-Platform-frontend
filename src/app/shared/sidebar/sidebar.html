@@ -23,9 +23,10 @@
     <div class="nav-section">
       <span class="nav-label">Monitoring</span>
       <a routerLink="/alerts" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">▪</span>
-        Alerts
-      </a>
+  <span class="nav-icon">▪</span>
+  Alerts
+  <span class="alert-badge" *ngIf="unresolvedCount > 0">{{ unresolvedCount }}</span>
+</a>
       <a routerLink="/logs" routerLinkActive="active" class="nav-item">
         <span class="nav-icon">▪</span>
         Logs

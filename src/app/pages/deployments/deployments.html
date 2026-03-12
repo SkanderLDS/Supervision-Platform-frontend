@@ -29,11 +29,11 @@
     <div class="panel">
       <div class="panel-header">
         <h2>Applications</h2>
-        <button class="btn-small" (click)="showAppForm = !showAppForm">+ New</button>
+        <button class="btn-small" *ngIf="authService.canEdit()" (click)="showAppForm = !showAppForm">+ New</button>
       </div>
 
       <!-- New App Form -->
-      <div class="inline-form" *ngIf="showAppForm">
+      <div class="inline-form" *ngIf="showAppForm && authService.canEdit()">
         <div class="form-group">
           <label>App Name</label>
           <input type="text" [(ngModel)]="newAppName" placeholder="MyApp" />
@@ -85,15 +85,15 @@
     <!-- Versions Panel -->
     <div class="panel" *ngIf="selectedAppId">
       <div class="versions-header">
-  <div class="versions-title">
-    <h2>Versions</h2>
-    <span class="versions-app-name">{{ getSelectedApp()?.name }}</span>
-  </div>
-  <button class="btn-small" (click)="showVersionForm = !showVersionForm">+ New Version</button>
-</div>
+        <div class="versions-title">
+          <h2>Versions</h2>
+          <span class="versions-app-name">{{ getSelectedApp()?.name }}</span>
+        </div>
+        <button class="btn-small" *ngIf="authService.canEdit()" (click)="showVersionForm = !showVersionForm">+ New Version</button>
+      </div>
 
       <!-- New Version Form -->
-      <div class="inline-form" *ngIf="showVersionForm">
+      <div class="inline-form" *ngIf="showVersionForm && authService.canEdit()">
         <div class="form-group">
           <label>Version Number</label>
           <input type="text" [(ngModel)]="newVersionNumber" placeholder="1.0.0" />
@@ -114,7 +114,7 @@
       </div>
 
       <!-- File Upload -->
-      <div class="file-upload-bar">
+      <div class="file-upload-bar" *ngIf="authService.canEdit()">
         <label class="file-label">
           📁 Select WAR/EAR file
           <input type="file" (change)="onFileSelected($event)" accept=".war,.ear" hidden />
@@ -131,7 +131,7 @@
             <th>Type</th>
             <th>Status</th>
             <th>Deployed At</th>
-            <th>Actions</th>
+            <th *ngIf="authService.canEdit()">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -146,7 +146,7 @@
             <td class="td-date">
               {{ version.deployedAt ? (version.deployedAt | date:'dd/MM/yy HH:mm') : '—' }}
             </td>
-            <td class="td-actions">
+            <td class="td-actions" *ngIf="authService.canEdit()">
               <button class="btn-action" (click)="deploy(version)"
                 *ngIf="version.status === 'UNDEPLOYED' || version.status === 'FAILED'">
                 Deploy

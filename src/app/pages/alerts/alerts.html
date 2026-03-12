@@ -46,7 +46,7 @@
             <th>Level</th>
             <th>Message</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th *ngIf="authService.canEdit()">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -63,7 +63,7 @@
                 {{ alert.resolved ? 'Resolved' : 'Active' }}
               </span>
             </td>
-            <td>
+            <td *ngIf="authService.canEdit()">
               <button class="btn-action" (click)="resolveAlert(alert.id)" *ngIf="!alert.resolved">
                 Resolve
               </button>
@@ -85,7 +85,7 @@
   <div *ngIf="activeTab === 'rules'">
     <div class="rules-header">
       <span class="rules-count">{{ alertRules.length }} rules configured</span>
-      <button class="btn-primary" (click)="openAddRule()">+ Add Rule</button>
+      <button class="btn-primary" *ngIf="authService.canEdit()" (click)="openAddRule()">+ Add Rule</button>
     </div>
 
     <div class="section-card">
@@ -99,7 +99,7 @@
             <th>Threshold</th>
             <th>Level</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th *ngIf="authService.canEdit()">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -117,7 +117,7 @@
                 {{ rule.enabled ? 'Enabled' : 'Disabled' }}
               </span>
             </td>
-            <td class="td-actions">
+            <td class="td-actions" *ngIf="authService.canEdit()">
               <button class="btn-action" (click)="toggleRule(rule)">
                 {{ rule.enabled ? 'Disable' : 'Enable' }}
               </button>
