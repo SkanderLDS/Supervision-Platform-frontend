@@ -1,0 +1,195 @@
+<div class="alerts-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        <span>Monitoring</span>
+      </div>
+      <h1>Alerts</h1>
+    </div>
+  </div>
+
+  <!-- Server Tabs -->
+  <div class="server-tabs" *ngIf="servers.length > 0">
+    <button
+      *ngFor="let server of servers"
+      class="server-tab"
+      [class.active]="selectedServerId === server.id"
+      (click)="selectServer(server.id)">
+      {{ server.name }}
+    </button>
+  </div>
+
+  <!-- Inner Tabs -->
+  <div class="inner-tabs">
+    <button class="inner-tab" [class.active]="activeTab === 'alerts'" (click)="activeTab = 'alerts'">
+      Alerts
+      <span class="badge" *ngIf="alerts.length > 0">{{ alerts.length }}</span>
+    </button>
+    <button class="inner-tab" [class.active]="activeTab === 'rules'" (click)="activeTab = 'rules'">
+      Alert Rules
+      <span class="badge" *ngIf="alertRules.length > 0">{{ alertRules.length }}</span>
+    </button>
+  </div>
+
+  <!-- Alerts Tab -->
+  <div *ngIf="activeTab === 'alerts'">
+    <div class="section-card">
+      <div *ngIf="loadingAlerts" class="loading">Loading alerts...</div>
+
+      <table *ngIf="!loadingAlerts && alerts.length > 0" class="data-table">
+        <thead>
+          <tr>
+            <th>Created At</th>
+            <th>Level</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let alert of alerts">
+            <td class="td-date">{{ alert.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+            <td>
+              <span class="severity-badge" [ngClass]="getSeverityClass(alert.level)">
+                {{ alert.level }}
+              </span>
+            </td>
+            <td class="td-message">{{ alert.message }}</td>
+            <td>
+              <span class="status-badge" [class.resolved]="alert.resolved">
+                {{ alert.resolved ? 'Resolved' : 'Active' }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="resolveAlert(alert.id)" *ngIf="!alert.resolved">
+                Resolve
+              </button>
+              <span class="td-date" *ngIf="alert.resolved">
+                {{ alert.resolvedAt | date:'dd/MM/yy HH:mm' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!loadingAlerts && alerts.length === 0" class="empty-state">
+        No alerts for this server.
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Tab -->
+  <div *ngIf="activeTab === 'rules'">
+    <div class="rules-header">
+      <span class="rules-count">{{ alertRules.length }} rules configured</span>
+      <button class="btn-primary" (click)="openAddRule()">+ Add Rule</button>
+    </div>
+
+    <div class="section-card">
+      <div *ngIf="loadingRules" class="loading">Loading rules...</div>
+
+      <table *ngIf="!loadingRules && alertRules.length > 0" class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Threshold</th>
+            <th>Level</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rule of alertRules">
+            <td class="td-metric">{{ rule.name }}</td>
+            <td>{{ rule.type }}</td>
+            <td><strong>{{ rule.threshold }}%</strong></td>
+            <td>
+              <span class="severity-badge" [ngClass]="getSeverityClass(rule.level)">
+                {{ rule.level }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [class.resolved]="!rule.enabled">
+                {{ rule.enabled ? 'Enabled' : 'Disabled' }}
+              </span>
+            </td>
+            <td class="td-actions">
+              <button class="btn-action" (click)="toggleRule(rule)">
+                {{ rule.enabled ? 'Disable' : 'Enable' }}
+              </button>
+              <button class="btn-action" (click)="openEditRule(rule)">Edit</button>
+              <button class="btn-action btn-danger" (click)="deleteRule(rule.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!loadingRules && alertRules.length === 0" class="empty-state">
+        No alert rules configured. Click <strong>+ Add Rule</strong> to create one.
+      </div>
+    </div>
+  </div>
+
+  <!-- Rule Form Modal -->
+  <div class="modal-overlay" *ngIf="showRuleForm" (click)="showRuleForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editingRule ? 'Edit Rule' : 'Add Alert Rule' }}</h2>
+        <button class="modal-close" (click)="showRuleForm = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Rule Name</label>
+            <input type="text" [(ngModel)]="ruleForm.name" placeholder="CPU High Alert" />
+          </div>
+          <div class="form-group">
+            <label>Metric Type</label>
+            <select [(ngModel)]="ruleForm.type">
+              <option value="CPU_USAGE">CPU</option>
+              <option value="MEMORY_USAGE">MEMORY</option>
+              <option value="DISK_USAGE">DISK</option>
+              <option value="ERROR_COUNT_PER_MINUTE">Error Count</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Threshold (%)</label>
+            <input type="number" [(ngModel)]="ruleForm.threshold" min="0" max="100" />
+          </div>
+          <div class="form-group full-width">
+            <label>Level</label>
+            <select [(ngModel)]="ruleForm.level">
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+              <option value="CRITICAL">CRITICAL</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="ruleForm.emailNotification" />
+              Send email notification
+            </label>
+          </div>
+          <div class="form-group full-width" *ngIf="ruleForm.emailNotification">
+            <label>Notification Email</label>
+            <input type="email" [(ngModel)]="ruleForm.notificationEmail"
+              placeholder="admin@vermeg.com" />
+          </div>
+        </div>
+        <div class="error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showRuleForm = false">Cancel</button>
+        <button class="btn-primary" (click)="saveRule()" [disabled]="savingRule">
+          {{ savingRule ? 'Saving...' : (editingRule ? 'Update' : 'Create Rule') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

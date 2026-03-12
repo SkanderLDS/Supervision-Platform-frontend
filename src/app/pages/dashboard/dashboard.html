@@ -1,0 +1,262 @@
+<div class="dashboard">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        <span>Overview</span>
+      </div>
+      <h1>Dashboard</h1>
+      <p class="header-sub">Real-time infrastructure monitoring</p>
+    </div>
+    <div class="header-actions">
+      <div class="last-updated" *ngIf="metrics">
+        Last updated: {{ metrics.collectedAt | date:'HH:mm:ss' }}
+      </div>
+      <a routerLink="/servers" class="btn-primary">+ Add Server</a>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrap total">
+        <span>🖥️</span>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalServers }}</div>
+        <div class="stat-label">Total Servers</div>
+      </div>
+      <div class="stat-bar-bg">
+        <div class="stat-bar-fill total-fill" [style.width.%]="100"></div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap up">
+        <span>↑</span>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value up-val">{{ serversUp }}</div>
+        <div class="stat-label">Online</div>
+      </div>
+      <div class="stat-bar-bg">
+        <div class="stat-bar-fill up-fill"
+          [style.width.%]="totalServers > 0 ? (serversUp / totalServers * 100) : 0"></div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap down">
+        <span>↓</span>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value down-val">{{ serversDown }}</div>
+        <div class="stat-label">Offline</div>
+      </div>
+      <div class="stat-bar-bg">
+        <div class="stat-bar-fill down-fill"
+          [style.width.%]="totalServers > 0 ? (serversDown / totalServers * 100) : 0"></div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap unknown">
+        <span>?</span>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalServers - serversUp - serversDown }}</div>
+        <div class="stat-label">Unknown</div>
+      </div>
+      <div class="stat-bar-bg">
+        <div class="stat-bar-fill unknown-fill"
+          [style.width.%]="totalServers > 0 ? ((totalServers - serversUp - serversDown) / totalServers * 100) : 0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics Section -->
+  <div class="metrics-container" *ngIf="servers.length > 0">
+
+    <!-- Server Selector -->
+    <div class="server-selector">
+      <div class="selector-label">Server</div>
+      <div class="server-tabs">
+        <button
+          *ngFor="let server of servers"
+          class="server-tab"
+          [class.active]="selectedServerId === server.id"
+          (click)="selectServer(server.id)">
+          <span class="tab-dot" [ngClass]="getStatusClass(server.status)"></span>
+          {{ server.name }}
+        </button>
+      </div>
+      <button class="btn-supervise" (click)="supervise(selectedServerId!)">
+        ↻ Supervise Now
+      </button>
+    </div>
+
+    <div *ngIf="loadingMetrics" class="loading-metrics">
+      <div class="spinner"></div>
+      Collecting metrics...
+    </div>
+
+    <div *ngIf="!loadingMetrics && metrics">
+
+      <!-- Gauge Cards -->
+      <div class="gauge-grid">
+        <div class="gauge-card" [ngClass]="getMetricClass(metrics.cpuUsage)">
+          <div class="gauge-header">
+            <span class="gauge-title">CPU Usage</span>
+            <span class="gauge-badge" [ngClass]="getMetricClass(metrics.cpuUsage)">
+              {{ metrics.cpuUsage >= 90 ? 'CRITICAL' : metrics.cpuUsage >= 75 ? 'WARNING' : 'NORMAL' }}
+            </span>
+          </div>
+          <div class="gauge-value">{{ metrics.cpuUsage | number:'1.1-1' }}<span class="gauge-unit">%</span></div>
+          <div class="gauge-track">
+            <div class="gauge-progress cpu-progress" [style.width.%]="metrics.cpuUsage"></div>
+          </div>
+          <div class="gauge-footer">
+            <span>0%</span>
+            <span>Threshold: 80%</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="gauge-card" [ngClass]="getMetricClass(metrics.memoryUsage)">
+          <div class="gauge-header">
+            <span class="gauge-title">RAM Usage</span>
+            <span class="gauge-badge" [ngClass]="getMetricClass(metrics.memoryUsage)">
+              {{ metrics.memoryUsage >= 90 ? 'CRITICAL' : metrics.memoryUsage >= 75 ? 'WARNING' : 'NORMAL' }}
+            </span>
+          </div>
+          <div class="gauge-value">{{ metrics.memoryUsage | number:'1.1-1' }}<span class="gauge-unit">%</span></div>
+          <div class="gauge-track">
+            <div class="gauge-progress ram-progress" [style.width.%]="metrics.memoryUsage"></div>
+          </div>
+          <div class="gauge-footer">
+            <span>0%</span>
+            <span>Threshold: 85%</span>
+            <span>100%</span>
+          </div>
+        </div>
+
+        <div class="gauge-card" [ngClass]="getMetricClass(metrics.diskUsage)">
+          <div class="gauge-header">
+            <span class="gauge-title">Disk Usage</span>
+            <span class="gauge-badge" [ngClass]="getMetricClass(metrics.diskUsage)">
+              {{ metrics.diskUsage >= 90 ? 'CRITICAL' : metrics.diskUsage >= 75 ? 'WARNING' : 'NORMAL' }}
+            </span>
+          </div>
+          <div class="gauge-value">{{ metrics.diskUsage | number:'1.1-1' }}<span class="gauge-unit">%</span></div>
+          <div class="gauge-track">
+            <div class="gauge-progress disk-progress" [style.width.%]="metrics.diskUsage"></div>
+          </div>
+          <div class="gauge-footer">
+            <span>0%</span>
+            <span>Threshold: 90%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-section" *ngIf="metricsHistory.length > 1">
+        <div class="charts-header">
+          <h2>Historical Trends</h2>
+          <span class="charts-sub">Last {{ metricsHistory.length }} measurements</span>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-label">
+              <span class="chart-dot cpu-dot"></span>
+              CPU Usage
+            </div>
+            <div class="chart-wrap">
+              <canvas id="cpuChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-label">
+              <span class="chart-dot ram-dot"></span>
+              RAM Usage
+            </div>
+            <div class="chart-wrap">
+              <canvas id="ramChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-label">
+              <span class="chart-dot disk-dot"></span>
+              Disk Usage
+            </div>
+            <div class="chart-wrap">
+              <canvas id="diskChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-history" *ngIf="metricsHistory.length <= 1">
+        <span>📊</span>
+        <p>Supervise the server a few more times to see historical trend charts.</p>
+      </div>
+
+    </div>
+
+    <div *ngIf="!loadingMetrics && !metrics" class="no-metrics">
+      <span>📡</span>
+      <p>No metrics collected yet.</p>
+      <button class="btn-primary" (click)="supervise(selectedServerId!)">Supervise Now</button>
+    </div>
+  </div>
+
+  <!-- Servers Table -->
+  <div class="section-card">
+    <div class="section-header">
+      <div>
+        <h2>Servers</h2>
+        <span class="section-sub">{{ servers.length }} registered</span>
+      </div>
+      <a routerLink="/servers" class="btn-link">View all →</a>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading servers...</div>
+
+    <table *ngIf="!loading && servers.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Host</th>
+          <th>Type</th>
+          <th>Environment</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let server of servers">
+          <td class="td-name">{{ server.name }}</td>
+          <td class="td-host">{{ server.host }}</td>
+          <td>{{ server.type }}</td>
+          <td><span class="env-badge">{{ server.environment }}</span></td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(server.status)">
+              <span class="status-dot"></span>{{ server.status }}
+            </span>
+          </td>
+          <td>
+            <button class="btn-action" (click)="supervise(server.id)">Supervise</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && servers.length === 0" class="empty-state">
+      No servers registered yet.
+      <a routerLink="/servers">Add your first server →</a>
+    </div>
+  </div>
+
+</div>

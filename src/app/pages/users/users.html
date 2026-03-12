@@ -1,0 +1,124 @@
+<div class="users-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        <span>Administration</span>
+      </div>
+      <h1>Users</h1>
+    </div>
+  </div>
+
+  <!-- Inner Tabs -->
+  <div class="inner-tabs">
+    <button class="inner-tab" [class.active]="activeTab === 'users'" (click)="switchTab('users')">
+      Users
+      <span class="badge" *ngIf="users.length > 0">{{ users.length }}</span>
+    </button>
+    <button class="inner-tab" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
+      Audit Logs
+    </button>
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="activeTab === 'users'">
+    <div class="section-card">
+      <div *ngIf="loading" class="loading">Loading users...</div>
+
+      <table *ngIf="!loading && users.length > 0" class="data-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Created At</th>
+            <th *ngIf="authService.isAdmin()">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td class="td-name">{{ user.username }}</td>
+            <td class="td-email">{{ user.email }}</td>
+            <td>
+              <span
+                *ngFor="let role of user.roles"
+                class="role-badge"
+                [ngClass]="getRoleClass(role)">
+                {{ role }}
+              </span>
+            </td>
+            <td class="td-date">{{ user.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+            <td *ngIf="authService.isAdmin()" class="td-actions">
+              <button class="btn-action" (click)="openRoleForm(user)">Change Role</button>
+              <button class="btn-action btn-danger" (click)="deleteUser(user)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!loading && users.length === 0" class="empty-state">
+        No users found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Logs Tab -->
+  <div *ngIf="activeTab === 'audit'">
+    <div class="section-card">
+      <div *ngIf="loadingAudit" class="loading">Loading audit logs...</div>
+
+      <table *ngIf="!loadingAudit && auditLogs.length > 0" class="data-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of auditLogs">
+            <td class="td-date">{{ log.timestamp | date:'dd/MM/yy HH:mm:ss' }}</td>
+            <td class="td-name">{{ log.username }}</td>
+            <td><span class="action-badge">{{ log.action }}</span></td>
+            <td class="td-details">{{ log.details }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="!loadingAudit && auditLogs.length === 0" class="empty-state">
+        No audit logs found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Role Assignment Modal -->
+  <div class="modal-overlay" *ngIf="showRoleForm" (click)="showRoleForm = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Change Role — {{ selectedUser?.username }}</h2>
+        <button class="modal-close" (click)="showRoleForm = false">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Assign Role</label>
+          <select [(ngModel)]="newRole">
+            <option value="VIEWER">VIEWER</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+        <div class="error-box" *ngIf="errorMessage">{{ errorMessage }}</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="showRoleForm = false">Cancel</button>
+        <button class="btn-primary" (click)="assignRole()" [disabled]="saving">
+          {{ saving ? 'Saving...' : 'Assign Role' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

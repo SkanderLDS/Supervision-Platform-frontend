@@ -1,0 +1,179 @@
+<div class="deployments-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        <span>Infrastructure</span>
+      </div>
+      <h1>Deployments</h1>
+    </div>
+  </div>
+
+  <!-- Server Tabs -->
+  <div class="server-tabs" *ngIf="servers.length > 0">
+    <button
+      *ngFor="let server of servers"
+      class="server-tab"
+      [class.active]="selectedServerId === server.id"
+      (click)="selectServer(server.id)">
+      {{ server.name }}
+      <span class="tab-env">{{ server.environment }}</span>
+    </button>
+  </div>
+
+  <div class="content-grid" *ngIf="selectedServerId">
+
+    <!-- Applications Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Applications</h2>
+        <button class="btn-small" (click)="showAppForm = !showAppForm">+ New</button>
+      </div>
+
+      <!-- New App Form -->
+      <div class="inline-form" *ngIf="showAppForm">
+        <div class="form-group">
+          <label>App Name</label>
+          <input type="text" [(ngModel)]="newAppName" placeholder="MyApp" />
+        </div>
+        <div class="form-group">
+          <label>Runtime Name</label>
+          <input type="text" [(ngModel)]="newAppRuntimeName" placeholder="myapp.war" />
+        </div>
+        <div class="form-group">
+          <label>Context Path</label>
+          <input type="text" [(ngModel)]="newAppContextPath" placeholder="/myapp" />
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select [(ngModel)]="newAppType">
+            <option value="WAR">WAR</option>
+            <option value="EAR">EAR</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="showAppForm = false">Cancel</button>
+          <button class="btn-primary" (click)="createApp()" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Create' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Apps List -->
+      <div class="app-list">
+        <div
+          *ngFor="let app of applications"
+          class="app-item"
+          [class.active]="selectedAppId === app.id"
+          (click)="selectApp(app.id)">
+          <div class="app-info">
+            <span class="app-name">{{ app.name }}</span>
+            <span class="app-runtime">{{ app.runtimeName }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(app.status)">
+            {{ app.status }}
+          </span>
+        </div>
+        <div *ngIf="applications.length === 0" class="empty-panel">
+          No applications yet.
+        </div>
+      </div>
+    </div>
+
+    <!-- Versions Panel -->
+    <div class="panel" *ngIf="selectedAppId">
+      <div class="panel-header">
+        <h2>Versions — {{ getSelectedApp()?.name }}</h2>
+        <button class="btn-small" (click)="showVersionForm = !showVersionForm">+ New Version</button>
+      </div>
+
+      <!-- New Version Form -->
+      <div class="inline-form" *ngIf="showVersionForm">
+        <div class="form-group">
+          <label>Version Number</label>
+          <input type="text" [(ngModel)]="newVersionNumber" placeholder="1.0.0" />
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select [(ngModel)]="newVersionType">
+            <option value="WAR">WAR</option>
+            <option value="EAR">EAR</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="showVersionForm = false">Cancel</button>
+          <button class="btn-primary" (click)="createVersion()" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Create' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- File Upload -->
+      <div class="file-upload-bar">
+        <label class="file-label">
+          📁 Select WAR/EAR file
+          <input type="file" (change)="onFileSelected($event)" accept=".war,.ear" hidden />
+        </label>
+        <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+        <span class="file-hint" *ngIf="!selectedFile">No file selected</span>
+      </div>
+
+      <!-- Versions Table -->
+      <table class="data-table" *ngIf="versions.length > 0">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Deployed At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let version of versions">
+            <td class="td-version">{{ version.version }}</td>
+            <td>{{ version.type }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(version.status)">
+                {{ version.status }}
+              </span>
+            </td>
+            <td class="td-date">
+              {{ version.deployedAt ? (version.deployedAt | date:'dd/MM/yy HH:mm') : '—' }}
+            </td>
+            <td class="td-actions">
+              <button class="btn-action" (click)="deploy(version)"
+                *ngIf="version.status === 'UNDEPLOYED' || version.status === 'FAILED'">
+                Deploy
+              </button>
+              <button class="btn-action" (click)="restart(version)"
+                *ngIf="version.status === 'DEPLOYED'">
+                Restart
+              </button>
+              <button class="btn-action btn-danger" (click)="stop(version)"
+                *ngIf="version.status === 'DEPLOYED'">
+                Stop
+              </button>
+              <button class="btn-action" (click)="start(version)"
+                *ngIf="version.status === 'STOPPED'">
+                Start
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="versions.length === 0" class="empty-panel">
+        No versions yet. Create a version to deploy.
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="servers.length === 0" class="empty-state">
+    No servers registered. Add a server first.
+  </div>
+
+</div>

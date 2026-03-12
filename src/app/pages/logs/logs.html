@@ -1,0 +1,98 @@
+<div class="logs-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="eyebrow">
+        <div class="eyebrow-line"></div>
+        <span>Monitoring</span>
+      </div>
+      <h1>Logs</h1>
+    </div>
+    <button class="btn-primary" (click)="collectLogs()" [disabled]="loading">
+      ↻ Collect Logs
+    </button>
+  </div>
+
+  <!-- Server Tabs -->
+  <div class="server-tabs" *ngIf="servers.length > 0">
+    <button
+      *ngFor="let server of servers"
+      class="server-tab"
+      [class.active]="selectedServerId === server.id"
+      (click)="selectedServerId = server.id; currentPage = 0; search()">
+      {{ server.name }}
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <select [(ngModel)]="filterLevel" (change)="currentPage = 0; search()">
+      <option value="">All Levels</option>
+      <option value="ERROR">ERROR</option>
+      <option value="WARN">WARN</option>
+      <option value="INFO">INFO</option>
+      <option value="DEBUG">DEBUG</option>
+    </select>
+    <input type="text" [(ngModel)]="filterApp"
+      placeholder="Filter by application..."
+      (keyup.enter)="currentPage = 0; search()" />
+    <input type="text" [(ngModel)]="filterKeyword"
+      placeholder="Search keyword..."
+      (keyup.enter)="currentPage = 0; search()" />
+    <button class="btn-search" (click)="currentPage = 0; search()">Search</button>
+    <button class="btn-reset" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="results-summary" *ngIf="!loading && totalElements > 0">
+    Showing {{ logs.length }} of {{ totalElements }} logs
+    (Page {{ currentPage + 1 }} of {{ totalPages }})
+  </div>
+
+  <!-- Logs Table -->
+  <div class="section-card">
+    <div *ngIf="loading" class="loading">Loading logs...</div>
+
+    <table *ngIf="!loading && logs.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Level</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td class="td-date">{{ log.timestamp | date:'dd/MM/yy HH:mm:ss' }}</td>
+          <td>
+            <span class="level-badge" [ngClass]="getLevelClass(log.level)">
+              {{ log.level }}
+            </span>
+          </td>
+          <td class="td-message">{{ log.message }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && logs.length === 0" class="empty-state">
+      No logs found. Try collecting logs or adjusting your filters.
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="page-btn" (click)="goToPage(0)" [disabled]="currentPage === 0">«</button>
+    <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">‹</button>
+    <button
+      *ngFor="let page of getPages()"
+      class="page-btn"
+      [class.active]="page === currentPage"
+      (click)="goToPage(page)">
+      {{ page + 1 }}
+    </button>
+    <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">›</button>
+    <button class="page-btn" (click)="goToPage(totalPages - 1)" [disabled]="currentPage === totalPages - 1">»</button>
+  </div>
+
+</div>

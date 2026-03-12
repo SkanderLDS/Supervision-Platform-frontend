@@ -1,0 +1,79 @@
+.navbar {
+  height: 64px;
+  background: #080f1e;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.brand-slash {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: #d4001a;
+  line-height: 1;
+}
+
+.brand-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.15);
+  margin: 0 1rem;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.5px;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.username {
+  font-size: 0.83rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+
+.logout-btn {
+  padding: 0.4rem 1.1rem;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.logout-btn:hover {
+  background: #d4001a;
+  border-color: #d4001a;
+  color: white;
+}

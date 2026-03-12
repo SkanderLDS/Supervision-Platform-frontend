@@ -1,0 +1,43 @@
+<aside class="sidebar">
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <span class="nav-label">Overview</span>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Dashboard
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Infrastructure</span>
+      <a routerLink="/servers" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Servers
+      </a>
+      <a routerLink="/deployments" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Deployments
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Monitoring</span>
+      <a routerLink="/alerts" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Alerts
+      </a>
+      <a routerLink="/logs" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Logs
+      </a>
+    </div>
+
+    <div class="nav-section" *ngIf="isAdmin()">
+      <span class="nav-label">Administration</span>
+      <a routerLink="/users" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">▪</span>
+        Users
+      </a>
+    </div>
+  </nav>
+</aside>
