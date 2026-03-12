@@ -6,6 +6,7 @@ import { DeploymentService } from '../../core/services/deployment';
 import { ApplicationService } from '../../core/services/application';
 import { Server } from '../../models/server';
 import { Application, ApplicationVersion } from '../../models/application';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-deployments',
@@ -37,7 +38,8 @@ export class DeploymentsComponent implements OnInit {
   constructor(
     private serverService: ServerService,
     private deploymentService: DeploymentService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {

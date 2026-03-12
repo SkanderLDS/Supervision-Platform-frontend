@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ServerService } from '../../core/services/server';
 import { Server, ServerRequest } from '../../models/server';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-servers',
@@ -21,7 +22,7 @@ export class ServersComponent implements OnInit {
 
   form: ServerRequest = this.emptyForm();
 
-  constructor(private serverService: ServerService) {}
+  constructor(private serverService: ServerService, public authService: AuthService) {}
 
   ngOnInit(): void {
     this.loadServers();

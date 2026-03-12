@@ -49,4 +49,12 @@ export class AuthService {
   isManager(): boolean {
     return this.getRoles().includes('ROLE_MANAGER');
   }
+  isViewer(): boolean {
+  return this.getRoles().includes('ROLE_VIEWER');
+}
+
+ canEdit(): boolean {
+  return this.isAdmin() || this.isManager();
+}
+  
 }

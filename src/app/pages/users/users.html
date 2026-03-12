@@ -39,7 +39,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let user of users">
-            <td class="td-name">{{ user.username }}</td>
+            <td>
+  <div class="user-cell">
+    <div class="user-avatar">{{ user.username.charAt(0) }}</div>
+    <span class="td-name">{{ user.username }}</span>
+  </div>
+</td>
             <td class="td-email">{{ user.email }}</td>
             <td>
               <span

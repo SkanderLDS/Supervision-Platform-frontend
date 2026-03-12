@@ -6,6 +6,7 @@ import { SupervisionService } from '../../core/services/supervision';
 import { ServerService } from '../../core/services/server';
 import { Alert, AlertRule, AlertRuleRequest } from '../../models/alert';
 import { Server } from '../../models/server';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-alerts',
@@ -33,7 +34,7 @@ export class AlertsComponent implements OnInit {
   constructor(
     private alertService: AlertService,
     private supervisionService: SupervisionService,
-    private serverService: ServerService
+    private serverService: ServerService,public authService: AuthService
   ) {}
 
   ngOnInit(): void {

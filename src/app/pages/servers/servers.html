@@ -9,7 +9,7 @@
       </div>
       <h1>Servers</h1>
     </div>
-    <button class="btn-primary" (click)="openAddForm()">+ Add Server</button>
+    <button class="btn-primary" *ngIf="authService.canEdit()" (click)="openAddForm()">+ Add Server</button>
   </div>
 
   <!-- Servers Table -->
@@ -44,8 +44,8 @@
           </td>
           <td class="td-actions">
             <button class="btn-action" (click)="checkConnectivity(server)">Check</button>
-            <button class="btn-action" (click)="openEditForm(server)">Edit</button>
-            <button class="btn-action btn-danger" (click)="delete(server)">Delete</button>
+            <button class="btn-action" *ngIf="authService.canEdit()" (click)="openEditForm(server)">Edit</button>
+            <button class="btn-action btn-danger" *ngIf="authService.canEdit()" (click)="delete(server)">Delete</button>
           </td>
         </tr>
       </tbody>
