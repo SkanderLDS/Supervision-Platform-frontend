@@ -86,10 +86,20 @@
     <div class="panel" *ngIf="selectedAppId">
       <div class="versions-header">
         <div class="versions-title">
-          <h2>Versions</h2>
-          <span class="versions-app-name">{{ getSelectedApp()?.name }}</span>
+          <h2>{{ getSelectedApp()?.name }}</h2>
+          <span class="versions-app-name">{{ getSelectedApp()?.runtimeName }}</span>
         </div>
-        <button class="btn-small" *ngIf="authService.canEdit()" (click)="showVersionForm = !showVersionForm">+ New Version</button>
+        <div class="versions-tabs">
+          <button class="vtab" [class.active]="activeTab === 'versions'" (click)="switchTab('versions')">
+            Versions
+          </button>
+          <button class="vtab" [class.active]="activeTab === 'history'" (click)="switchTab('history')">
+            History
+          </button>
+        </div>
+        <button class="btn-small" *ngIf="authService.canEdit() && activeTab === 'versions'" (click)="showVersionForm = !showVersionForm">
+          + New Version
+        </button>
       </div>
 
       <!-- New Version Form -->
@@ -114,7 +124,7 @@
       </div>
 
       <!-- File Upload -->
-      <div class="file-upload-bar" *ngIf="authService.canEdit()">
+      <div class="file-upload-bar" *ngIf="authService.canEdit() && activeTab === 'versions'">
         <label class="file-label">
           📁 Select WAR/EAR file
           <input type="file" (change)="onFileSelected($event)" accept=".war,.ear" hidden />
@@ -123,54 +133,92 @@
         <span class="file-hint" *ngIf="!selectedFile">No file selected</span>
       </div>
 
-      <!-- Versions Table -->
-      <table class="data-table" *ngIf="versions.length > 0">
-        <thead>
-          <tr>
-            <th>Version</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Deployed At</th>
-            <th *ngIf="authService.canEdit()">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let version of versions">
-            <td class="td-version">{{ version.version }}</td>
-            <td>{{ version.type }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="getStatusClass(version.status)">
-                {{ version.status }}
-              </span>
-            </td>
-            <td class="td-date">
-              {{ version.deployedAt ? (version.deployedAt | date:'dd/MM/yy HH:mm') : '—' }}
-            </td>
-            <td class="td-actions" *ngIf="authService.canEdit()">
-              <button class="btn-action" (click)="deploy(version)"
-                *ngIf="version.status === 'UNDEPLOYED' || version.status === 'FAILED'">
-                Deploy
-              </button>
-              <button class="btn-action" (click)="restart(version)"
-                *ngIf="version.status === 'DEPLOYED'">
-                Restart
-              </button>
-              <button class="btn-action btn-danger" (click)="stop(version)"
-                *ngIf="version.status === 'DEPLOYED'">
-                Stop
-              </button>
-              <button class="btn-action" (click)="start(version)"
-                *ngIf="version.status === 'STOPPED'">
-                Start
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div *ngIf="versions.length === 0" class="empty-panel">
-        No versions yet. Create a version to deploy.
+      <!-- Versions Tab -->
+      <div *ngIf="activeTab === 'versions'">
+        <table class="data-table" *ngIf="versions.length > 0">
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Deployed At</th>
+              <th *ngIf="authService.canEdit()">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let version of versions">
+              <td class="td-version">{{ version.version }}</td>
+              <td>{{ version.type }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(version.status)">
+                  {{ version.status }}
+                </span>
+              </td>
+              <td class="td-date">
+                {{ version.deployedAt ? (version.deployedAt | date:'dd/MM/yy HH:mm') : '—' }}
+              </td>
+              <td class="td-actions" *ngIf="authService.canEdit()">
+                <button class="btn-action" (click)="deploy(version)"
+                  *ngIf="version.status === 'UNDEPLOYED' || version.status === 'FAILED'">
+                  Deploy
+                </button>
+                <button class="btn-action" (click)="restart(version)"
+                  *ngIf="version.status === 'DEPLOYED'">
+                  Restart
+                </button>
+                <button class="btn-action btn-danger" (click)="stop(version)"
+                  *ngIf="version.status === 'DEPLOYED'">
+                  Stop
+                </button>
+                <button class="btn-action" (click)="start(version)"
+                  *ngIf="version.status === 'STOPPED'">
+                  Start
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="versions.length === 0" class="empty-panel">
+          No versions yet. Create a version to deploy.
+        </div>
       </div>
+
+      <!-- History Tab -->
+      <div *ngIf="activeTab === 'history'">
+        <div *ngIf="loadingLogs" class="empty-panel">Loading history...</div>
+        <table class="data-table" *ngIf="!loadingLogs && deploymentLogs.length > 0">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Version</th>
+              <th>Action</th>
+              <th>Status</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of deploymentLogs" [class.rollback-row]="log.isRollback">
+              <td class="td-date">{{ log.timestamp | date:'dd/MM/yy HH:mm:ss' }}</td>
+              <td class="td-version">{{ log.version }}</td>
+              <td>
+                <span class="action-badge" [class.rollback-badge]="log.isRollback">
+                  {{ log.isRollback ? '↩ ROLLBACK' : log.action }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(log.status)">
+                  {{ log.status }}
+                </span>
+              </td>
+              <td class="td-message">{{ log.message }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="!loadingLogs && deploymentLogs.length === 0" class="empty-panel">
+          No deployment history yet.
+        </div>
+      </div>
+
     </div>
 
   </div>
